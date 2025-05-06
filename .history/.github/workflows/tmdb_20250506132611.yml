@@ -19,4 +19,5 @@ jobs:
       - name: Run TMDB Notion Updater
         run: python tmdb_updater.py
 
-        
+
+        https://www.notion.so/robleto/1e2a0765760b8051ae83f6e2aa3b4931?v=1e2a0765760b81cf9319000cfd6ba1c7&pvs=4
