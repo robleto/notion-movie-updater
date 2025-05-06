@@ -84,7 +84,7 @@ def fill_missing_movies():
             },
             {
                 "property": "Art",
-                "url": {"is_empty": True}
+                "rich_text": {"is_empty": True}
             }
               ]
         },  
