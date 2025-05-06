@@ -75,12 +75,21 @@ def update_notion_page(page_id, fields):
 def fill_missing_movies():
     print("🔍 Looking for movies missing data...")
     query = {
-        "database_id": DATABASE_ID,
-        "filter": {
-            "property": "Overview",
-            "rich_text": {"is_empty": True}
-        }
-    }
+    "database_id": DATABASE_ID,
+    "filter": {
+        "or": [
+            {
+                "property": "Overview",
+                "rich_text": {"is_empty": True}
+            },
+            {
+                "property": "Art",
+                "url": {"is_empty": True}
+            }
+              ]
+        },  
+}
+
     pages = notion.databases.query(**query).get('results', [])
     print(f"📄 Found {len(pages)} incomplete movies")
 
