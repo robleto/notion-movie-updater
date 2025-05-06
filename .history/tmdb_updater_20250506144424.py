@@ -3,11 +3,9 @@ import requests
 from notion_client import Client
 import time
 
-# NEW: load from .env
 from dotenv import load_dotenv
 load_dotenv()
 
-# This script updates a Notion database with movie details from TMDB.
 
 # --- CONFIGURATION ---
 NOTION_TOKEN = os.environ['NOTION_API_KEY']

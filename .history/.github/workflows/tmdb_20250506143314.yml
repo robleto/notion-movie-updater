@@ -29,8 +29,3 @@ jobs:
           NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
           NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
-        continue-on-error: true
-      - name: Commit and push changes
-        run: |
-          git config --local user.name "github-actions"
-          git config --local user.email " 
