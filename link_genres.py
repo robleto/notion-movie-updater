@@ -1,60 +1,85 @@
-import os
 from notion_client import Client
+import os
 from dotenv import load_dotenv
 
+# Load environment variables from .env if running locally
 load_dotenv()
 
-# Setup
-notion = Client(auth=os.environ["NOTION_API_KEY"])
-MOVIES_DB = os.environ["MOVIES_DB_ID"]
-GENRES_DB = os.environ["GENRES_DB_ID"]
+NOTION_API_KEY = os.getenv("NOTION_API_KEY")
+MOVIES_DB = os.getenv("NOTION_DATABASE_ID")
+GENRES_DB = os.getenv("GENRES_DATABASE_ID")
+
+notion = Client(auth=NOTION_API_KEY)
+
+def get_all_pages(database_id, filter=None):
+    all_results = []
+    start_cursor = None
+
+    while True:
+        query_params = {
+            "database_id": database_id,
+            "page_size": 100,
+        }
+        if filter:
+            query_params["filter"] = filter
+        if start_cursor:
+            query_params["start_cursor"] = start_cursor
+
+        response = notion.databases.query(**query_params)
+        all_results.extend(response.get("results", []))
+
+        if not response.get("has_more"):
+            break
+
+        start_cursor = response.get("next_cursor")
+
+    return all_results
 
 def build_genre_lookup():
-    genre_lookup = {}
-    genre_pages = notion.databases.query(database_id=GENRES_DB).get("results", [])
+    genre_pages = get_all_pages(GENRES_DB)
+    lookup = {}
     for page in genre_pages:
-        name_prop = page["properties"].get("Name", {})
-        title = name_prop.get("title", [])
-        if title:
-            name = title[0]["plain_text"]
-            genre_lookup[name] = page["id"]
-    return genre_lookup
+        name = page["properties"]["Name"]["title"][0]["plain_text"]
+        lookup[name.lower()] = page["id"]
+    return lookup
 
 def link_genres():
+    print("🔗 Linking genre tags with Notion genre relations...")
+
     genre_lookup = build_genre_lookup()
-    movies = notion.databases.query(database_id=MOVIES_DB).get("results", [])
+    movies = get_all_pages(MOVIES_DB)
 
     for movie in movies:
         props = movie["properties"]
-        movie_id = movie["id"]
+        title = props.get("Title", {}).get("title", [{}])[0].get("plain_text", "Untitled")
+        page_id = movie["id"]
 
-        if "Genre" not in props or "Genre Relation" not in props:
-            continue
+        genre_tags = props.get("Genre", {}).get("multi_select", [])
+        existing_relations = props.get("Genres", {}).get("relation", [])
 
-        multi_select = props["Genre"].get("multi_select", [])
-        current_links = props["Genre Relation"].get("relation", [])
+        # Skip if already linked or no tags
+        if genre_tags and not existing_relations:
+            related_ids = []
+            for tag in genre_tags:
+                genre_name = tag["name"].lower()
+                genre_id = genre_lookup.get(genre_name)
+                if genre_id:
+                    related_ids.append({"id": genre_id})
 
-        if current_links or not multi_select:
-            continue
-
-        genre_names = [item["name"] for item in multi_select]
-        related_ids = [ {"id": genre_lookup[name]} for name in genre_names if name in genre_lookup ]
-
-        if related_ids:
-            notion.pages.update(
-                page_id=movie_id,
-                properties={
-                    "Genre Relation": {
-                        "type": "relation",
-                        "relation": related_ids
+            if related_ids:
+                notion.pages.update(
+                    page_id=page_id,
+                    properties={
+                        "Genres": {
+                            "relation": related_ids
+                        }
                     }
-                }
-            )
-            title_val = props.get("Title", {}).get("title", [])
-            if title_val:
-                print(f"✅ Linked genres for: {title_val[0]['plain_text']}")
+                )
+                print(f"✅ Updated: {title}")
+            else:
+                print(f"⚠️ No genre matches found for: {title}")
+        else:
+            print(f"⏩ Skipped: {title} (already linked or no tags)")
 
 if __name__ == "__main__":
-    print("🔗 Linking genre tags with Notion genre relations...")
     link_genres()
-    print("🎉 Done!")
