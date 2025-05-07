@@ -24,6 +24,6 @@ jobs:
       - name: Run genre linker
         env:
           NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
-          MOVIES_DB_ID: ${{ secrets.NOTION_DATABASE_ID_ID }}
+          MOVIES_DB_ID: ${{ secrets.NOTION_DATABASE_ID }}
           GENRES_DB_ID: ${{ secrets.GENRES_DB_ID }}
         run: python link_genres.py
