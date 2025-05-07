@@ -86,7 +86,8 @@ def fill_missing_movies():
 
     for idx, page in enumerate(pages):
         props = page['properties']
-        page_id = page['id']        title = get_text(props['Title']['title']) if 'Title' in props else None
+        page_id = page['id']        
+        title = get_text(props['Title']['title']) if 'Title' in props else None
         year = get_text(props['Year']['rich_text']) if 'Year' in props else None
 
         if not title:
@@ -95,7 +96,7 @@ def fill_missing_movies():
 
         print(f"🎬 [{idx + 1}/{len(pages)}] Processing: {title} ({year})")
 
-        movi_id = search_movie(title, year)
+        movie_id = search_movie(title, year)
         if not movie_id:
             print(f"❌ Movie not found: {title}")
             continue
