@@ -97,8 +97,8 @@ def fill_missing_movies():
         props = page['properties']
         page_id = page['id']
         title = props['Title']['title'][0]['plain_text'] 
-        year = props['Year']['rich_text'][0]['plain_text'] if 'Year' in props and props['Year']['rich_text'] else None
-
+        raw_year = props['Year']['rich_text'][0]['plain_text'].strip() if 'Year' in props and props['Year']['rich_text'] else None
+        year = int(raw_year) if raw_year and raw_year.isdigit() else None
 
 
         if not title or not year:
