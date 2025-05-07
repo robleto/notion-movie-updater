@@ -96,8 +96,9 @@ def fill_missing_movies():
     for page in pages:
         props = page['properties']
         page_id = page['id']
-        title = props['Title']['title'][0]['plain_text'] if props['Title']['title'] else None
-        year = props['Released_Year']['number'] if 'Released_Year' in props and props['Released_Year']['number'] else None
+        title = props['Title']['title'][0]['plain_text'] 
+        year = props['Year']['number'] if 'Year' in props and props['Year']['number'] else None
+
 
         if not title or not year:
             print(f"❌ Skipping: Missing title/year on page {page_id}")
