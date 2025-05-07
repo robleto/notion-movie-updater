@@ -7,7 +7,7 @@ load_dotenv()
 
 NOTION_API_KEY = os.getenv("NOTION_API_KEY")
 MOVIES_DB = os.getenv("NOTION_DATABASE_ID")
-GENRES_DB = os.getenv("GENRE_DB_ID")
+GENRES_DB = os.getenv("GENRES_DB_ID")
 
 notion = Client(auth=NOTION_API_KEY)
 
