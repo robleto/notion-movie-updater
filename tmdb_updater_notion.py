@@ -1,4 +1,5 @@
 import os
+import re
 import requests
 import time
 from notion_client import Client
@@ -43,31 +44,34 @@ def get_text(p):
     except (IndexError, KeyError, TypeError):
         return ''
 
+def clean_title(title):
+    return re.sub(r"[^\w\s:]", '', title).strip()
+
 def search_movie(title, year=None):
     if not title:
         return None
+    clean = clean_title(title)
 
     params = {
         'api_key': TMDB_API_KEY,
-        'query': title,
+        'query': clean,
         'include_adult': False,
     }
 
     if year and year.isdigit():
         params['year'] = int(year)
 
-    print(f"📦 Searching TMDB: '{title}' | Year: {year}")
+    print(f"📦 Searching TMDB: '{clean}' | Year: {year}")
     response = requests.get(SEARCH_URL, params=params)
     if response.status_code == 200:
         results = response.json().get('results', [])
         if results:
             return results[0]['id']
 
-    # Retry without year
-    print(f"🔁 Retry without year: '{title}'")
+    print(f"🔁 Retry without year: '{clean}'")
     response = requests.get(SEARCH_URL, params={
         'api_key': TMDB_API_KEY,
-        'query': title,
+        'query': clean,
         'include_adult': False,
     })
     if response.status_code == 200:
@@ -158,11 +162,12 @@ def fill_missing_movies():
                 if revenue:
                     updates['Gross'] = {'rich_text': [{'text': {'content': format_currency(revenue)}}]}
 
-            if not props.get('Studio') or not props['Studio']['rich_text']:
+            if not props.get('Studio') or 'rich_text' not in props['Studio']:
                 companies = details.get('production_companies', [])
                 if companies:
                     original_studio = companies[0]['name']
-                    updates['Studio'] = {'rich_text': [{'text': {'content': standardize_studio(original_studio)}}]}
+                    standardized_studio = standardize_studio(original_studio)
+                    updates['Studio'] = {'rich_text': [{'text': {'content': standardized_studio}}]}
 
         if credits:
             crew = credits.get('crew', [])
@@ -188,4 +193,3 @@ def fill_missing_movies():
 
 if __name__ == "__main__":
     fill_missing_movies()
-#     print("🔍 Checking Notion for missing movie data...")
