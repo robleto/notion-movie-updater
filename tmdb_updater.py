@@ -97,7 +97,8 @@ def fill_missing_movies():
         props = page['properties']
         page_id = page['id']
         title = props['Title']['title'][0]['plain_text'] 
-        year = props['Year']['number'] if 'Year' in props and props['Year']['number'] else None
+        year = props['Year']['rich_text'][0]['plain_text'] if 'Year' in props and props['Year']['rich_text'] else None
+
 
 
         if not title or not year:
