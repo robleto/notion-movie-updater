@@ -77,7 +77,7 @@ def fill_missing_movies():
     response = notion.databases.query(
         database_id=DATABASE_ID,
         filter={"or": [
-            {"property": "Overview", "ric_text": {"is_empty": True}},
+            {"property": "Overview", "rich_text": {"is_empty": True}},
             {"property": "Art", "files": {"is_empty": True}}
         ]}
     )
