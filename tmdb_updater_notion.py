@@ -162,11 +162,18 @@ def fill_missing_movies():
                 if revenue:
                     updates['Gross'] = {'rich_text': [{'text': {'content': format_currency(revenue)}}]}
 
-            if not props.get('Studio') or 'rich_text' not in props['Studio']:
-                companies = details.get('production_companies', [])
-                if companies:
-                    original_studio = companies[0]['name']
-                    standardized_studio = standardize_studio(original_studio)
+            # Studio — now handles select correctly
+            companies = details.get('production_companies', [])
+            if companies:
+                original_studio = companies[0]['name']
+                standardized_studio = standardize_studio(original_studio)
+                studio_prop = props.get('Studio', {})
+                studio_type = studio_prop.get('type')
+
+                if studio_type == 'select':
+                    if not studio_prop.get('select'):
+                        updates['Studio'] = {'select': {'name': standardized_studio}}
+                else:
                     updates['Studio'] = {'rich_text': [{'text': {'content': standardized_studio}}]}
 
         if credits:
