@@ -77,7 +77,7 @@ def link_genres():
                 notion.pages.update(
                     page_id=page_id,
                     properties={
-                        "Genres": {
+                        "Genre Relation": {
                             "relation": related_ids
                         }
                     }
