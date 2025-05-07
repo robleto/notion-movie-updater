@@ -13,7 +13,10 @@ notion = Client(auth=NOTION_API_KEY)
 
 if not GENRES_DB:
     raise ValueError("❌ Missing GENRES_DATABASE_ID environment variable")
-
+if not MOVIES_DB:
+    raise ValueError("❌ Missing MOVIES_DATABASE_ID environment variable")
+if not NOTION_API_KEY:
+    raise ValueError("❌ Missing NOTION_API_KEY environment variable")
 
 def get_all_pages(database_id, filter=None):
     all_results = []
