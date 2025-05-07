@@ -106,8 +106,13 @@ def fill_missing_movies():
         print(f"🎬 Processing: {title} ({year})")
         movie_id = search_tmdb_movie(title, year)
         if not movie_id:
-            print(f"❌ TMDB not found: {title}")
-            continue
+                print(f"❌ TMDB not found: {title}")
+                update_notion_page(page_id, {
+                    "Tags": {
+                        "multi_select": [{"name": "TMDB Not Found"}]
+                    }
+                })
+                continue
 
         details = get_tmdb_details(movie_id)
         credits = get_tmdb_credits(movie_id)
