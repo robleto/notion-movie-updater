@@ -37,31 +37,41 @@ STUDIO_MAPPING = {
 def standardize_studio(name):
     return STUDIO_MAPPING.get(name, name)
 
+def get_text(p):
+    try:
+        return str(p[0]['plain_text']).strip()
+    except (IndexError, KeyError, TypeError):
+        return ''
+
 def search_movie(title, year=None):
+    if not title:
+        return None
+
     params = {
         'api_key': TMDB_API_KEY,
         'query': title,
         'include_adult': False,
     }
 
-    # First, try exact match with year
     if year and year.isdigit():
         params['year'] = int(year)
+
+    print(f"📦 Searching TMDB: '{title}' | Year: {year}")
     response = requests.get(SEARCH_URL, params=params)
     if response.status_code == 200:
-        results = response.json().get('results')
+        results = response.json().get('results', [])
         if results:
             return results[0]['id']
 
-    # Retry with just the title (no year)
-    print(f"🔁 Retry search without year: {title}")
+    # Retry without year
+    print(f"🔁 Retry without year: '{title}'")
     response = requests.get(SEARCH_URL, params={
         'api_key': TMDB_API_KEY,
         'query': title,
         'include_adult': False,
     })
     if response.status_code == 200:
-        results = response.json().get('results')
+        results = response.json().get('results', [])
         if results:
             return results[0]['id']
 
@@ -84,9 +94,6 @@ def format_currency(value):
         return None
     return "${:,.0f}".format(value)
 
-def get_text(p):
-    return p[0]['plain_text'].strip() if p else ''
-
 def fill_missing_movies():
     print("🔍 Checking Notion for missing movie data...")
     response = notion.databases.query(
@@ -101,7 +108,7 @@ def fill_missing_movies():
 
     for idx, page in enumerate(pages):
         props = page['properties']
-        page_id = page['id']        
+        page_id = page['id']
         title = get_text(props['Title']['title']) if 'Title' in props else None
         year = get_text(props['Year']['rich_text']) if 'Year' in props else None
 
@@ -118,7 +125,6 @@ def fill_missing_movies():
 
         details = get_movie_details(movie_id)
         credits = get_movie_credits(movie_id)
-
         updates = {}
 
         if details:
@@ -182,3 +188,4 @@ def fill_missing_movies():
 
 if __name__ == "__main__":
     fill_missing_movies()
+#     print("🔍 Checking Notion for missing movie data...")
