@@ -132,37 +132,49 @@ def fill_missing_movies():
         updates = {}
 
         if details:
+            # Genre
             if not props.get('Genre') or not props['Genre']['multi_select']:
                 genres = details.get('genres')
                 if genres:
                     updates['Genre'] = {'multi_select': [{'name': g['name']} for g in genres]}
 
-            if not props.get('Rating') or props['Rating'].get('number') is None:
-                rating = details.get('vote_average')
-                if rating is not None:
-                    updates['Rating'] = {'number': rating}
+            # Rating
+            rating_prop = props.get('Rating', {})
+            if rating_prop.get('type') == 'number':
+                current_rating = rating_prop.get('number')
+                if current_rating is None or current_rating == 0:
+                    rating = details.get('vote_average')
+                    if rating is not None and rating > 0:
+                        updates['Rating'] = {'number': rating}
 
+            # Overview
             if not props.get('Overview') or not props['Overview']['rich_text']:
                 overview = details.get('overview')
                 if overview:
                     updates['Overview'] = {'rich_text': [{'text': {'content': overview}}]}
 
-            if not props.get('Runtime') or props['Runtime'].get('number') is None:
-                runtime = details.get('runtime')
-                if runtime:
-                    updates['Runtime'] = {'number': runtime}
+            # Runtime
+            runtime_prop = props.get('Runtime', {})
+            if runtime_prop.get('type') == 'number':
+                current_runtime = runtime_prop.get('number')
+                if current_runtime is None or current_runtime == 0:
+                    runtime = details.get('runtime')
+                    if runtime is not None and runtime > 0:
+                        updates['Runtime'] = {'number': runtime}
 
+            # Poster Art
             if not props.get('Art') or not props['Art']['files']:
                 poster_path = details.get('poster_path')
                 if poster_path:
                     updates['Art'] = {'files': [{'name': 'poster', 'external': {'url': f"{IMAGE_BASE_URL}{poster_path}"}}]}
 
+            # Gross
             if not props.get('Gross') or not props['Gross']['rich_text']:
                 revenue = details.get('revenue')
                 if revenue:
                     updates['Gross'] = {'rich_text': [{'text': {'content': format_currency(revenue)}}]}
 
-            # Studio — now handles select correctly
+            # Studio
             companies = details.get('production_companies', [])
             if companies:
                 original_studio = companies[0]['name']
@@ -177,12 +189,14 @@ def fill_missing_movies():
                     updates['Studio'] = {'rich_text': [{'text': {'content': standardized_studio}}]}
 
         if credits:
+            # Director
             crew = credits.get('crew', [])
             if not props.get('Director') or not props['Director']['rich_text']:
                 directors = [p['name'] for p in crew if p['job'] == 'Director']
                 if directors:
                     updates['Director'] = {'rich_text': [{'text': {'content': directors[0]}}]}
 
+            # Stars
             cast = credits.get('cast', [])
             for i in range(4):
                 key = f"Star{i+1}"
