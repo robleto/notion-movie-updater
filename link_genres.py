@@ -11,6 +11,10 @@ GENRES_DB = os.getenv("GENRES_DB_ID")
 
 notion = Client(auth=NOTION_API_KEY)
 
+if not GENRES_DB:
+    raise ValueError("❌ Missing GENRES_DATABASE_ID environment variable")
+
+
 def get_all_pages(database_id, filter=None):
     all_results = []
     start_cursor = None
