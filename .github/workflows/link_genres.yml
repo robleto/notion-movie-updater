@@ -1,0 +1,29 @@
+name: Link Genres to Movies
+
+on:
+  schedule:
+    - cron: '0 10 * * *'  # daily at 10 AM UTC
+  workflow_dispatch:      # allow manual trigger from GitHub UI
+
+jobs:
+  link-genres:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install python-dotenv notion-client
+
+      - name: Run genre linker
+        env:
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          MOVIES_DB_ID: ${{ secrets.MOVIES_DB_ID }}
+          GENRES_DB_ID: ${{ secrets.GENRES_DB_ID }}
+        run: python link_genres.py
