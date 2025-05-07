@@ -43,6 +43,8 @@ def search_movie(title, year=None):
         'query': title,
         'include_adult': False,
     }
+
+    # First, try exact match with year
     if year and year.isdigit():
         params['year'] = int(year)
     response = requests.get(SEARCH_URL, params=params)
@@ -50,6 +52,19 @@ def search_movie(title, year=None):
         results = response.json().get('results')
         if results:
             return results[0]['id']
+
+    # Retry with just the title (no year)
+    print(f"🔁 Retry search without year: {title}")
+    response = requests.get(SEARCH_URL, params={
+        'api_key': TMDB_API_KEY,
+        'query': title,
+        'include_adult': False,
+    })
+    if response.status_code == 200:
+        results = response.json().get('results')
+        if results:
+            return results[0]['id']
+
     return None
 
 def get_movie_details(movie_id):
